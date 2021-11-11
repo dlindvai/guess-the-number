@@ -59,8 +59,8 @@ def show_room(room: dict):
 
 
 def show_inventory():
-    if len(backpack) == 0:
-        print('Tvoj batoh je prazdny')
+    if not backpack:
+        print('Tvoj batoh je prazdny.')
     else:
         print('V batohu mas:')
         for item in backpack:
@@ -79,10 +79,10 @@ if __name__ == '__main__':
     }
 
     intro_banner()
-
-    # main loop
     game_state = states.PLAY
     backpack = ['figa borova', 'minca']
+
+    # main loop
     while game_state == states.PLAY:
         line = input('> ').lower().strip()
         if line == '':
