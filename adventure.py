@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import item as item
+
 import states
 
 
@@ -25,6 +27,7 @@ def commands_list():
     print('* prikazy/commands/help/? - zobrazi zoznam prikazov')
     print('* rozhliadni sa/look around/show room - zobrazi nazov a opis aktualnej miestnosti')
     print('* inventory/i/batoh/backpack - zobrazi obsah inventara')
+    print('* vezmi - vezme predmet z miestnosti a vlozi ho do batohu')
 
 
 def show_room(room: dict):
@@ -67,6 +70,20 @@ def show_inventory():
             print(f'* {item}')
 
 
+def take_item():
+    thing = line.split('vezmi')[1].strip()
+    if not thing:
+        print("Neviem, čo chceš zobrať.")
+
+    elif thing not in room["items"]:
+        print('Taký predmet tu nikde nevidím.')
+
+    else:
+        backpack.append(thing)
+        room["items"].remove(thing)
+        print(f'Predmet {thing} si si vložil do batohu.')
+
+
 if __name__ == '__main__':
     # init game
     room = {
@@ -79,6 +96,7 @@ if __name__ == '__main__':
     }
 
     intro_banner()
+    show_room()
     game_state = states.PLAY
     backpack = ['figa borova', 'minca']
 
@@ -102,6 +120,9 @@ if __name__ == '__main__':
 
         elif line in ('inventory', 'i', 'batoh', 'backpack'):
             show_inventory()
+
+        elif line.startswith('vezmi'):
+            take_item()
 
         else:
             print('Taky prikaz nepoznam.')
