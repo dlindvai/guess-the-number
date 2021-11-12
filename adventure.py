@@ -1,36 +1,13 @@
 #!/usr/bin/env python3
-import item as item
-
+from typing import Dict
 import states
 
-
-def intro_banner():
-    print(" ___           _ _                         _                       ")
-    print("|_ _|_ __   __| (_) __ _ _ __   __ _      | | ___  _ __   ___  ___ ")
-    print(" | || '_ \ / _` | |/ _` | '_ \ / _` |  _  | |/ _ \| '_ \ / _ \/ __|")
-    print(" | || | | | (_| | | (_| | | | | (_| | | |_| | (_) | | | |  __/\__ \\")
-    print("|___|_| |_|\__,_|_|\__,_|_| |_|\__,_|  \___/ \___/|_| |_|\___||___/")
-    print("                       and his Great Escape                        ")
-    print()
+from commands import intro_banner, about_game, commands_list, show_inventory, take_item, drop_item, quit_game,\
+    inspect_item
+from items import figa, coin, canister, matches, fire_extinguisher, newspaper, door
 
 
-def about_game():
-    print('Túto hru, inšpirovanú slávnym Indiana Jonesom, vytvoril začínajúci vývojár Darius Lindvai.')
-    print('Na začiatku hry sa ocitnete v roli Indiana Jonesa, ktorý sa snaží uniknúť z uzamknutej miestnosti.')
-    print('Vašou úlohou je preskúmať miestnosť a nájsť všetky stopy a predmety, ktoré vám pri úniku pomôžu.')
-
-
-def commands_list():
-    print('Zoznam pouzitelnych prikazov v hre:')
-    print('* koniec/quit/q/bye/end - ukonci hru')
-    print('* o hre/about/info - zobrazi zakladne informacie o hre')
-    print('* prikazy/commands/help/? - zobrazi zoznam prikazov')
-    print('* rozhliadni sa/look around/show room - zobrazi nazov a opis aktualnej miestnosti')
-    print('* inventory/i/batoh/backpack - zobrazi obsah inventara')
-    print('* vezmi - vezme predmet z miestnosti a vlozi ho do batohu')
-
-
-def show_room(room: dict):
+def show_room(room: Dict):
     """
     Show content of the room.
     The function shows name and description of the room. It also prints the list of items, which are in the room, or
@@ -42,90 +19,84 @@ def show_room(room: dict):
     if type(room) is not dict:
         raise TypeError('Room is not of type "Dictionary"')
 
-    print(f'Nachadzas sa v miestnosti {room["name"]}.')
+    print(f'Nachádzaš sa v miestnosti {room["name"]}.')
     print(f'{room["description"]}')
 
     if not room["items"]:
         print('V miestnosti sa nenáchadzajú žiadne predmety.')
     else:
-        print('V miestnosti vidis tieto predmety:')
+        print('V miestnosti vidíš tieto predmety:')
         for item in room["items"]:
-            print(f'* {item}')
+            print(f'* {item["name"]}')
         # print(f'Vidis: {", ".join(room["items"])}')
 
     if not room["exits"]:
         print('Z miestnosti nevedú žiadne východy.')
     else:
-        print('Z miestnosti sa vies dostat von tymito vychodmi:')
+        print('Z miestnosti sa vieš dostať von týmito východmi:')
         for out in room["exits"]:
             print(f'* {out}')
 
 
-def show_inventory():
-    if not backpack:
-        print('Tvoj batoh je prazdny.')
-    else:
-        print('V batohu mas:')
-        for item in backpack:
-            print(f'* {item}')
-
-
-def take_item():
-    thing = line.split('vezmi')[1].strip()
-    if not thing:
-        print("Neviem, čo chceš zobrať.")
-
-    elif thing not in room["items"]:
-        print('Taký predmet tu nikde nevidím.')
-
-    else:
-        backpack.append(thing)
-        room["items"].remove(thing)
-        print(f'Predmet {thing} si si vložil do batohu.')
-
-
 if __name__ == '__main__':
     # init game
-    room = {
+    context = {
+        'state': states.PLAY,
+        'backpack': {
+            'items': [],
+            'max': 2
+        },
+        'world': {},
+        'room': {}
+    }
+
+    context['backpack']['items'].append(figa)
+    context['backpack']['items'].append(coin)
+
+    context['room'] = {
         'name': 'Dungeon',
         'description': 'Nachádzaš sa v tmavej zatuchnutej miestnosti. Na kamenných stenách sa nenachádza žiadne okno, '
                        'čo dáva tušiť, \nže si niekoľko metrov pod zemou. Žeby košický hrad? Aj to je možné, '
                        'ti prebleslo hlavou.',
-        'items': ['kanister', 'noviny', 'zapalky', 'hasiaci pristroj'],
+        'items': [canister, matches, newspaper, fire_extinguisher, door],
         'exits': []
     }
 
     intro_banner()
-    show_room()
-    game_state = states.PLAY
-    backpack = ['figa borova', 'minca']
+    show_room(context["room"])
 
     # main loop
-    while game_state == states.PLAY:
+    while context['state'] == states.PLAY:
         line = input('> ').lower().strip()
         if line == '':
             continue
 
         elif line in ('koniec', 'quit', 'q', 'bye', 'end'):
-            game_state = states.QUIT
+            quit_game(context)
 
         elif line in ('o hre', 'about', 'info'):
-            about_game()
+            about_game(context)
 
-        elif line in ('prikazy', 'commands', 'help', '?'):
-            commands_list()
+        elif line in ('prikazy', 'commands', 'help', '?', 'cmd'):
+            commands_list(context)
 
         elif line in ('rozhliadni sa', 'look around', 'show room'):
-            show_room(room)
+            show_room(context['room'])
 
         elif line in ('inventory', 'i', 'batoh', 'backpack'):
-            show_inventory()
+            show_inventory(context)
 
         elif line.startswith('vezmi'):
-            take_item()
+            take_item(line, context)
+
+        elif line.startswith('poloz'):
+            drop_item(line, context)
+
+        elif line.startswith('preskumaj'):
+            inspect_item(line, context)
 
         else:
-            print('Taky prikaz nepoznam.')
+            print('Taký príkaz nepoznám.')
 
-    print('Thank you for playing!')
-    print('(c)2021 by Darius Lindvai')
+    print('Dúfame, že ste si hru užili! Dovidienia!!')
+    print('(c)2021 by Dárius Lindvai')
