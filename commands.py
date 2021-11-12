@@ -1,6 +1,6 @@
 from typing import Dict
 import states
-from helpers import get_item_by_name
+from helpers import get_item_by_name, show_room
 from items import MOVABLE
 
 
@@ -30,6 +30,10 @@ def commands_list(context):
     print('* vezmi - vezme predmet z miestnosti a vloží ho do batohu')
     print('* poloz - vyberie predmet z batohu a položí ho na zem')
     print('* preskumaj - vypíše vlastnosť daného predmetu')
+
+
+def look_around(context: dict):
+    show_room(context['room'])
 
 
 def quit_game(context):
