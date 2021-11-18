@@ -1,11 +1,28 @@
 #!/usr/bin/env python3
-from typing import Dict
 import states
+from commands import commands
+from helpers import show_room
 from items import figa, coin, canister, matches, fire_extinguisher, newspaper, door
-from commands import intro_banner, about_game, commands_list, show_inventory, take_item, drop_item, quit_game, \
-    inspect_item, look_around
+
+
+def parse(line: str, commands: list) -> tuple:
+    for cmd in commands:
+        for alias in cmd["aliases"] + (cmd["name"],):
+            if line.startswith(alias):
+                param = line.split(alias)[1].strip()
+                return cmd, param
+    return (None, None)
+
 
 if __name__ == '__main__':
+    print(" ___           _ _                         _                       ")
+    print("|_ _|_ __   __| (_) __ _ _ __   __ _      | | ___  _ __   ___  ___ ")
+    print(" | || '_ \ / _` | |/ _` | '_ \ / _` |  _  | |/ _ \| '_ \ / _ \/ __|")
+    print(" | || | | | (_| | | (_| | | | | (_| | | |_| | (_) | | | |  __/\__ \\")
+    print("|___|_| |_|\__,_|_|\__,_|_| |_|\__,_|  \___/ \___/|_| |_|\___||___/")
+    print("                       and his Great Escape                        ")
+    print()
+
     # init game
     context = {
         'state': states.PLAY,
@@ -17,53 +34,34 @@ if __name__ == '__main__':
         'room': {}
     }
 
-    context['backpack']['items'].append(figa)
-    context['backpack']['items'].append(coin)
+    context["backpack"]["items"].append(figa)
+    context["backpack"]["items"].append(coin)
 
-    context['room'] = {
+    context["room"] = {
         'name': 'Dungeon',
         'description': 'Nachádzaš sa v tmavej zatuchnutej miestnosti. Na kamenných stenách sa nenachádza žiadne okno, '
                        'čo dáva tušiť, \nže si niekoľko metrov pod zemou. Žeby košický hrad? Aj to je možné, '
                        'ti prebleslo hlavou.',
-        'items': [canister, matches, newspaper, fire_extinguisher, door],
+        'items': [canister, matches, fire_extinguisher, newspaper, door],
         'exits': []
     }
 
-    intro_banner()
-    look_around(context)
+    show_room(context["room"])
 
     # main loop
-    while context['state'] == states.PLAY:
+    while context["state"] == states.PLAY:
+        # normalizing string
         line = input('> ').lower().strip()
+
+        # empty input
         if line == '':
             continue
 
-        elif line in ('koniec', 'quit', 'q', 'bye', 'end'):
-            quit_game(context)
-
-        elif line in ('o hre', 'about', 'info'):
-            about_game(context)
-
-        elif line in ('prikazy', 'commands', 'help', '?', 'cmd'):
-            commands_list(context)
-
-        elif line in ('rozhliadni sa', 'look around', 'show room'):
-            look_around(context)
-
-        elif line in ('inventory', 'i', 'batoh', 'backpack'):
-            show_inventory(context)
-
-        elif line.startswith('vezmi'):
-            take_item(line, context)
-
-        elif line.startswith('poloz'):
-            drop_item(line, context)
-
-        elif line.startswith('preskumaj'):
-            inspect_item(line, context)
-
-        else:
+        command, param = parse(line, commands)
+        if command is None:
             print('Taký príkaz nepoznám.')
+        else:
+            callback = command["exec"]
+            callback(context, param)
 
-    print('Dúfame, že ste si hru užili! Dovidienia!!')
     print('(c)2021 by Dárius Lindvai')
