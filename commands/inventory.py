@@ -1,15 +1,15 @@
 def _exec(context: dict, param: str):
-    if not context["backpack"]["items"]:
-        print('Tvoj batoh je prázdny.')
+    if not context['backpack']['items']:
+        print("Batoh je prázdny.")
     else:
-        print('V batohu máš:')
-        for item in context["backpack"]["items"]:
-            print(f'    * {item["name"]}')
+        print("V batohu máš:")
+        for item in context['backpack']['items']:
+            print(f"   * {item['name']}")
 
 
 cmd = {
     'name': 'inventar',
-    'description': 'zobrazí obsah inventára',
-    'aliases': ('inventory', 'i', 'batoh', 'backpack'),
-    'exec': _exec
-},
+    'description': 'zobrazí obsah batohu',
+    'aliases': ("i", "inventory", 'batoh'),
+    'exec': _exec,
+}
